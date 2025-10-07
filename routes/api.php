@@ -2,18 +2,12 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ParqueaderoController;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
+// Endpoint para registrar la entrada de un vehículo
+Route::post('/parqueadero/entrada', [ParqueaderoController::class, 'registrarEntrada']);
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+// Endpoint para registrar la salida de un vehículo
+Route::post('/parqueadero/salida', [ParqueaderoController::class, 'registrarSalida']);
+// NUEVO: Endpoint para ver el estado completo del parqueadero
+Route::get('/parqueadero/estado', [ParqueaderoController::class, 'estadoActual']);
