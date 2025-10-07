@@ -16,6 +16,8 @@ class Registro extends Model
         'cliente_id',
         'vehiculo_placa',
         'hora_ingreso',
+        'hora_salida',
+        'total_pagado',
         'piso',
         'espacio',
         'estado',

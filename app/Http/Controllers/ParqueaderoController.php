@@ -10,10 +10,8 @@ use Carbon\Carbon;
 
 class ParqueaderoController extends Controller
 {
-    // Método para registrar la entrada de un vehículo
     public function registrarEntrada(Request $request)
     {
-        // 1. Validar los datos de entrada
         $request->validate([
             'documento' => 'required|string|max:20',
             'nombre' => 'required|string|max:150',
@@ -23,13 +21,11 @@ class ParqueaderoController extends Controller
             'tipo' => 'required|in:Motocicleta,Carro',
         ]);
 
-        // Verificar si el vehículo ya está adentro
         $registroActivo = Registro::where('vehiculo_placa', strtoupper($request->placa))->where('estado', 'Activo')->first();
         if ($registroActivo) {
-            return response()->json(['message' => 'Este vehículo ya se encuentra en el parqueadero.'], 409);
+            return response()->json(['message' => 'Este vehiculo ya existe en el parqueadero.'], 409);
         }
 
-        // 2. Crear o encontrar el cliente y el vehículo (para no duplicar)
         $cliente = Cliente::firstOrCreate(
             ['documento' => $request->documento],
             ['nombre' => $request->nombre]
@@ -44,13 +40,11 @@ class ParqueaderoController extends Controller
             ]
         );
 
-        // 3. Lógica para encontrar el próximo espacio disponible
         $espacioAsignado = $this->encontrarEspacioDisponible();
         if (!$espacioAsignado) {
-            return response()->json(['message' => 'El parqueadero está lleno.'], 400);
+            return response()->json(['message' => 'El parqueadero esta full.'], 400);
         }
 
-        // 4. Crear el registro de entrada
         $registro = Registro::create([
             'cliente_id' => $cliente->id,
             'vehiculo_placa' => $vehiculo->placa,
@@ -61,28 +55,27 @@ class ParqueaderoController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Vehículo registrado con éxito.',
+            'message' => 'Vehículo registrado correctamente.',
             'registro' => $registro
         ], 201);
     }
 
-    // Método para registrar la salida y calcular el costo
     public function registrarSalida(Request $request)
     {
         $request->validate(['placa' => 'required|string|exists:vehiculos,placa']);
 
         $registro = Registro::where('vehiculo_placa', strtoupper($request->placa))
-                              ->where('estado', 'Activo')
-                              ->first();
+            ->where('estado', 'Activo')
+            ->first();
 
         if (!$registro) {
-            return response()->json(['message' => 'No se encontró un registro activo para esta placa.'], 404);
+            return response()->json(['message' => 'No se encontro un registro de salida para este vehiculo.'], 404);
         }
 
         // Calcular costo
         $horaIngreso = new Carbon($registro->hora_ingreso);
         $horaSalida = Carbon::now();
-        
+
         $minutosTranscurridos = $horaIngreso->diffInMinutes($horaSalida);
         if ($minutosTranscurridos == 0) {
             $horasTranscurridas = 1;
@@ -95,7 +88,6 @@ class ParqueaderoController extends Controller
         $tarifa = ($tipoVehiculo == 'Carro') ? 3.0 : 1.5;
         $totalPagar = $horasTranscurridas * $tarifa;
 
-        // Actualizar el registro
         $registro->update([
             'hora_salida' => $horaSalida,
             'total_pagado' => $totalPagar,
@@ -110,15 +102,14 @@ class ParqueaderoController extends Controller
         ]);
     }
 
-    // Lógica para encontrar el espacio
     private function encontrarEspacioDisponible()
     {
         $espaciosOcupados = Registro::where('estado', 'Activo')
-                                      ->select('piso', 'espacio')
-                                      ->get()
-                                      ->map(function ($item) {
-                                          return "{$item->piso}-{$item->espacio}";
-                                      })->toArray();
+            ->select('piso', 'espacio')
+            ->get()
+            ->map(function ($item) {
+                return "{$item->piso}-{$item->espacio}";
+            })->toArray();
 
         for ($piso = 1; $piso <= 4; $piso++) {
             for ($espacio = 1; $espacio <= 10; $espacio++) {
@@ -128,20 +119,16 @@ class ParqueaderoController extends Controller
             }
         }
 
-        return null; // Parqueadero lleno
+        return null;
     }
-    
-    /**
-     * Devuelve el estado actual de todos los espacios del parqueadero.
-     */
+
     public function estadoActual()
     {
         $totalPisos = 4;
         $espaciosPorPiso = 10;
-        
+
         $registrosActivos = Registro::where('estado', 'Activo')->get();
 
-        // Creamos un mapa de búsqueda para eficiencia
         $mapaOcupados = [];
         foreach ($registrosActivos as $registro) {
             $mapaOcupados["{$registro->piso}-{$registro->espacio}"] = $registro->vehiculo_placa;
@@ -153,7 +140,7 @@ class ParqueaderoController extends Controller
             $espacios = [];
             for ($espacio = 1; $espacio <= $espaciosPorPiso; $espacio++) {
                 $key = "{$piso}-{$espacio}";
-                
+
                 if (isset($mapaOcupados[$key])) {
                     $espacios[] = [
                         'espacio_nro' => $espacio,
@@ -168,7 +155,7 @@ class ParqueaderoController extends Controller
                     ];
                 }
             }
-            
+
             $estadoParqueadero[] = [
                 'piso_nro' => $piso,
                 'espacios' => $espacios
@@ -177,5 +164,14 @@ class ParqueaderoController extends Controller
 
         return response()->json($estadoParqueadero);
     }
-}
 
+    public function calcularGananciasTotales()
+    {
+        $ganancias = Registro::where('estado', 'Finalizado')->sum('total_pagado');
+
+        return response()->json([
+            'mensaje' => 'El total de ganancias hasta ahora es:',
+            'total_ganado' => '$' . number_format($ganancias, 2) . ' USD'
+        ]);
+    }
+}
