@@ -7,11 +7,13 @@ use App\Models\Cliente;
 use App\Models\Vehiculo;
 use App\Models\Registro;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class ParqueaderoController extends Controller
 {
     public function registrarEntrada(Request $request)
     {
+        Log::info('Método registrarEntrada llamado');
         $request->validate([
             'documento' => 'required|string|max:20',
             'nombre' => 'required|string|max:150',
@@ -62,6 +64,7 @@ class ParqueaderoController extends Controller
 
     public function registrarSalida(Request $request)
     {
+        Log::info('Método registrarSalida llamado');
         $request->validate(['placa' => 'required|string|exists:vehiculos,placa']);
 
         $registro = Registro::where('vehiculo_placa', strtoupper($request->placa))
@@ -124,6 +127,7 @@ class ParqueaderoController extends Controller
 
     public function estadoActual()
     {
+        Log::info('Método estadoActual llamado');
         $totalPisos = 4;
         $espaciosPorPiso = 10;
 
@@ -167,6 +171,7 @@ class ParqueaderoController extends Controller
 
     public function calcularGananciasTotales()
     {
+        Log::info('Método calcularGananciasTotales llamado');
         $ganancias = Registro::where('estado', 'Finalizado')->sum('total_pagado');
 
         return response()->json([
