@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 
 class DatabaseSeeder extends Seeder
 {
@@ -12,11 +14,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // \App\Models\User::factory(10)->create();
-
-        // \App\Models\User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+        // Creamos un único usuario para nuestra API
+        User::create([
+            'name' => 'Parqueadero App',
+            'email' => 'api-user@parqueadero.com', // Puedes cambiar este email
+            'password' => Hash::make('una-contraseña-muy-segura') // CAMBIA ESTA CONTRASEÑA
+        ]);
     }
 }
