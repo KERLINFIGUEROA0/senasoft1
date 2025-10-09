@@ -13,14 +13,13 @@ class ParqueaderoController extends Controller
 {
     public function registrarEntrada(Request $request)
     {
-        Log::info('Método registrarEntrada llamado');
         $request->validate([
             'documento' => 'required|string|max:20',
             'nombre' => 'required|string|max:150',
             'placa' => 'required|string|max:10',
             'marca' => 'nullable|string|max:50',
             'color' => 'nullable|string|max:50',
-            'tipo' => 'required|in:Motocicleta,Carro',
+            'tipo' => 'required|in:Motocicleta,Carro,Camion,',
         ]);
 
         $registroActivo = Registro::where('vehiculo_placa', strtoupper($request->placa))->where('estado', 'Activo')->first();
@@ -64,7 +63,6 @@ class ParqueaderoController extends Controller
 
     public function registrarSalida(Request $request)
     {
-        Log::info('Método registrarSalida llamado');
         $request->validate(['placa' => 'required|string|exists:vehiculos,placa']);
 
         $registro = Registro::where('vehiculo_placa', strtoupper($request->placa))
@@ -75,7 +73,6 @@ class ParqueaderoController extends Controller
             return response()->json(['message' => 'No se encontro un registro de salida para este vehiculo.'], 404);
         }
 
-        // Calcular costo
         $horaIngreso = new Carbon($registro->hora_ingreso);
         $horaSalida = Carbon::now();
 
@@ -127,7 +124,6 @@ class ParqueaderoController extends Controller
 
     public function estadoActual()
     {
-        Log::info('Método estadoActual llamado');
         $totalPisos = 4;
         $espaciosPorPiso = 10;
 
