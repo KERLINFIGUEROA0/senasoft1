@@ -9,6 +9,8 @@ class Vehiculo extends Model
 {
     use HasFactory;
 
+    protected $primaryKey = 'placa'; // <--- AÑADE ESTA LÍNEA
+
     public $incrementing = false;
 
     protected $keyType = 'string';

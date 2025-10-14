@@ -9,9 +9,8 @@ class Registro extends Model
 {
     use HasFactory;
 
-    /**
-     * Los atributos que son asignables.
-     */
+
+   
     protected $fillable = [
         'cliente_id',
         'vehiculo_placa',
